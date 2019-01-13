@@ -1,0 +1,91 @@
+```{r}
+setwd("D:/GA_SMART_COMMUNITIES_GRA/src/")
+source("header_uli.R")
+
+#functions
+getValRange <- function(x, hilo) {
+  ifelse(hilo %in% unlist(dimnames(x)), x["text",hilo][[1]], NA)
+}
+
+addZero <- function(x){
+  for(i in 1:length(x)){
+    if(as.integer(x[i]) <= 9){
+      x[i] <- paste0("0",x[i])
+    } else {
+      x[i] <- x[i]
+    }
+  }
+  
+  return(x)
+}
+```
+
+
+This grabs python data about the buildings
+
+```{python}
+import os
+import osmnx as ox
+
+path = "D:/GA_SMART_COMMUNITIES_GRA/src"
+os.chdir(path)
+
+pt = (41.91351,-87.66099)
+dist = 1000
+
+bldg = ox.buildings_from_point(pt, dist)
+
+ox.save_gdf_shapefile(bldg, filename = "bldg_out", folder = "D:\GA_SMART_COMMUNITIES_GRA\src")
+
+```
+
+This section grabs zillow data
+```{r}
+set_zillow_web_service_id("X1-ZWz1gu2mdw56ob_8w9nb")
+
+keeps <- c("addr_city","addr_count", "addr_house","addr_postc",
+      "addr_stree", "amenity", "geometry")
+
+csz = "Chicago, IL"
+
+getValRange <- function(x, hilo) {
+  ifelse(hilo %in% unlist(dimnames(x)), x["text",hilo][[1]], NA)
+}
+
+sdf <- st_read(dsn = "../src/bldg_out/bldg_out.shp", stringsAsFactors = FALSE) %>% select(one_of(keeps)) %>%
+  filter(is.na(amenity) == TRUE) %>% filter(is.na(addr_house) == FALSE) %>%
+  mutate(zillow_addr = paste(addr_house,addr_stree,sep = " "))
+
+for(i in 1:nrow(sdf)) {
+  if(i == 1){ remove(data)}
+  
+  xml <- GetSearchResults(address = sdf[i,]$zillow_addr, citystatezip = csz)
+  
+  if(length(xml$response[["results"]]) > 0){
+    xmlDat <- xmlToList(xml$response[["results"]])
+    
+    out <- apply(xmlDat, MAR=2, function(property) {
+      zpid <- property$zpid
+      address <- unlist(property$address)
+      z <- property$zestimate
+      zestdf <- list(
+        amount=ifelse("text" %in% names(z$amount), z$amount$text, NA),
+        lastupdated=z$"last-updated",
+        valueChange=ifelse(length(z$valueChange)==0, NA, z$valueChange),
+        valueLow=getValRange(z$valuationRange, "low"),
+        valueHigh=getValRange(z$valuationRange, "high"),
+        percentile=z$percentile)
+      list(id=zpid, address, zestdf)
+    })
+    
+    if(is.data.frame(get("data")) == FALSE){
+      data <- as.data.frame(do.call(rbind, lapply(out, unlist)), row.names = seq_len(length(out)))
+    } else {
+      data_temp <- as.data.frame(do.call(rbind, lapply(out, unlist)), row.names=seq_len(length(out)))
+      data <- rbind(data,data_temp)
+    }
+    
+  } else {}
+}
+
+summary(data$amount)

@@ -21,9 +21,6 @@ census_api_key('2e1118f239dfb706ce9ed6bb0986704a32f220c7', overwrite = TRUE, ins
 options(tigris_class = "sf")
 options(tigris_use_cache = TRUE)
 
-#set working path
-setwd("")
-
 usr = "postgres"
 pwd = "postgres"
 db = "gt_wrk"
