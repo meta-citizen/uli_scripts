@@ -41,7 +41,7 @@ ox.save_gdf_shapefile(bldg, filename = "bldg_out", folder = "D:\GA_SMART_COMMUNI
 
 This section grabs zillow data
 ```{r}
-set_zillow_web_service_id("X1-ZWz1gu2mdw56ob_8w9nb")
+set_zillow_web_service_id("__GET_FROM__ZILLOW")
 
 keeps <- c("addr_city","addr_count", "addr_house","addr_postc",
       "addr_stree", "amenity", "geometry")
