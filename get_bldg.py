@@ -23,15 +23,15 @@ import overpass as op
 path = "D:/GA_SMART_COMMUNITIES_GRA/src"
 os.chdir(path)
 
-place = "chicago_il_41_87"
-pt = (41.91351,-87.66099) #This variable sets the center point
-dist = 1000 #this sets the distance around the point that will be retrieved
+place = "cincinnati_uli_2019"
+pt = (39.09453,-84.51416) #This variable sets the center point
+dist = 1500 #this sets the distance around the point that will be retrieved
 
 #NOTE: So far as I can tell this sets the sides of a squre thus it goes
 #1/2(dist) in each direction from the center point.
 
 #%% GET BUILDINGS
-bldg = ox.buildings_from_point(pt, dist)
+bldg = ox.buildings_from_point(pt, dist, retain_invalid = True)
 
 fig, bx = ox.plot_buildings(bldg,
                             show = True,

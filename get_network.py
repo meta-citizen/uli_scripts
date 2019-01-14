@@ -23,8 +23,8 @@ import matplotlib.colors as colors
 path = "D:/GA_SMART_COMMUNITIES_GRA/src"
 os.chdir(path)
 
-place = "chicago_il_41_87"
-pt = (41.91351,-87.66099) #This variable sets the center point
+place = "cincinnati_uli_2019"
+pt = (39.09453,-84.51416) #This variable sets the center point
 dist = 1000 #this sets the distance around the point that will be retrieved
 
 #NOTE: So far as I can tell this sets the sides of a squre thus it goes
@@ -41,13 +41,6 @@ grph_road = ox.graph_from_point(pt,
                                 network_type = 'all'
                                 )
 
-#get rail lines, locating stations is proving to be difficult.
-grph_rail = ox.graph_from_point(pt,
-                           dist,
-                           distance_type = 'bbox',
-                           network_type = 'all',
-                           infrastructure = 'way["railway"]')
-
 fig, ax = ox.plot_graph(grph_road,
                         show = True,
                         save = True,
@@ -57,7 +50,7 @@ fig, ax = ox.plot_graph(grph_road,
                         node_color = '#000000',
                         node_size = 7
                         )
-ox.save_graph_shapefile(grph, filename = place+"_network", folder = path)
+ox.save_graph_shapefile(grph_road, filename = place+"_network", folder = path)
 
 #%% GRAB NETWORK STATS
 
@@ -66,14 +59,14 @@ ES = ox.stats.extended_stats(grph_road, anc = True)
 avg_blk_edge = S['street_length_avg']
 
 #%% GENERATE CHLOROPLETHIC MAP
-edge_centrality = nx.closeness_centrality(nx.line_graph(G))
-ev = [edge_centrality[edge + (0,)] for edge in G.edges()]
+edge_centrality = nx.closeness_centrality(nx.line_graph(grph_road))
+ev = [edge_centrality[edge + (0,)] for edge in grph_road.edges()]
 
 norm = colors.Normalize(vmin=min(ev)*0.8, vmax=max(ev))
 cmap = cm.ScalarMappable(norm=norm, cmap=cm.cool)
 ec = [cmap.to_rgba(cl) for cl in ev]
 
-fig, ax = ox.plot_graph(G, bgcolor = 'white', axis_off = True, node_size=0,
+fig, ax = ox.plot_graph(grph_road, bgcolor = 'white', axis_off = True, node_size=0,
                         edge_color = ec, edge_linewidth = 1, edge_alpha = 1,
-                        filename = grf_out, file_format = frmt,
+                        filename = place+"_chloropleth_name", file_format = 'svg',
                         save = True)

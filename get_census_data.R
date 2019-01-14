@@ -22,11 +22,14 @@ addZero <- function(x){
 }
 
 #You will need to find the relevant zip codes
-st = "IL"
-cnty = "Cook"
-zips = c("60642", "60622","60614", "60647","60610")
+st = "OH"
+cnty = "Hamilton"
+zips = c("45202", "45203","45214", "45219","45206")
+
 sf_zip <- st_union(zctas(cb = FALSE, starts_with = "606", state = "IL", year = 2016) %>% 
                      filter(ZCTA5CE10 %in% zips))
+
+mapview(sf_zip)
 
 decinnial_vars <- load_variables(2010, "sf1", cache = TRUE)
 acs_vars <- load_variables(2017, "acs5", cache = TRUE)
